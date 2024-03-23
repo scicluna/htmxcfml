@@ -1,8 +1,8 @@
 {
   "name": "htmxcfml",
-  "displayName": "",
-  "description": "",
-  "version": "0.0.1",
+  "displayName": "htmxcfml",
+  "description": "HTMX autofill for CFML files",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.87.0"
   },
