@@ -4,6 +4,9 @@ import htmxData from '../htmx-data.json'; // Adjust the path to your actual JSON
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('cfml', {
 		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+            if (!isPositionInsideHtmlTag(document, position)) {
+                return null; // Early return if not inside an HTML tag
+            }
             const line = document.lineAt(position);
             const linePrefix = line.text.substring(0, position.character);
             const swapMatch = linePrefix.match(/(hx-swap=["|'])([^"|']*)$/);
@@ -22,6 +25,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     const hoverProvider = vscode.languages.registerHoverProvider('cfml', {
         provideHover(document, position) {
+            if (!isPositionInsideHtmlTag(document, position)) {
+                return null; // Early return if not inside an HTML tag
+            }
             const range = document.getWordRangeAtPosition(position, /hx-\w+/);
             if (!range) {
                 return null;
@@ -43,6 +49,21 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(hoverProvider);
 }
 
+function isPositionInsideHtmlTag(document: vscode.TextDocument, position: vscode.Position): boolean {
+    const textUntilPosition = document.getText(new vscode.Range(new vscode.Position(0, 0), position));
+    const lastOpenTag = textUntilPosition.lastIndexOf('<');
+    const lastCloseTag = textUntilPosition.lastIndexOf('>');
+    if (lastOpenTag > lastCloseTag) { 
+        const afterLastOpenTag = textUntilPosition.slice(lastOpenTag + 1);
+        const isCfTag = afterLastOpenTag.startsWith('cf');
+
+        if (!afterLastOpenTag.startsWith('/') && !isCfTag) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function getSwapCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
     const swapOptions = htmxData.valueSets.find(set => set.name === 'swap')?.values || [];
     return swapOptions.map(option =>
@@ -56,7 +77,7 @@ function getSwapCompletionItems(document: vscode.TextDocument, position: vscode.
     );
 }
 
-function getHtmxCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
+export function getHtmxCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
     return htmxData.globalAttributes.map(attr =>
         createCompletionItem(
             attr.name,

@@ -2,9 +2,13 @@
   "name": "htmxcfml",
   "displayName": "htmxcfml",
   "description": "HTMX autofill for CFML files",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.87.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scicluna/htmxcfml"
   },
   "categories": [
     "Other"
